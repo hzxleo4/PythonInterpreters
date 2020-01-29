@@ -6,8 +6,7 @@ while True:
 	if "=" in Lines:
 		LeftExp,RightExp = Lines.split("=")
 		LeftExp = LeftExp.rstrip()
-		Variableslist = [key for key in Variables]
-		#print(Variableslist)
+		Variableslist =  sorted([key for key in Variables],key = lambda x:len(x),reverse = True)
 		for key in Variableslist:
 			if str(key) in RightExp:
 				if type(Variables[key]) == str:
