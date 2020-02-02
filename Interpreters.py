@@ -9,7 +9,14 @@ def ChangeVariables(Expression):
 				Expression =  Expression.replace(str(key),str(Variables[key]))
 	return Expression
 def Assign(Lines):
+	Operator = ['+', '-', '*', '/', '&', '|', '~', '>>', '<<', '//', '**']
 	LeftExp,RightExp = Lines.split("=")
+	for i in Operator:
+		if i in LeftExp:
+			LeftExp = LeftExp[:LeftExp.find(i)]
+			RightExp =  LeftExp + i + RightExp
+			break
+	#print(RightExp)
 	LeftExp = LeftExp.strip()
 	RightExp = ChangeVariables(RightExp)
 	LeftExp = LeftExp.split(",")
