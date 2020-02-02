@@ -53,7 +53,7 @@ def Branch(Lines):
 		Lines = input('...')
 		#print("-->",Lines)
 		try:
-			if Lines[:4] != "    " and Lines[:4] != 'elif' and Lines[:5] != 'else:' and Lines[0] !='\t':
+			if Lines[:4] != 'elif' and Lines[:5] != 'else:' and Lines[0] !='\t':
 				break
 		except:
 			break
@@ -72,6 +72,15 @@ def Branch(Lines):
 		elif IsTrue == 1:
 			Run_Code(Lines)
 
+def Built_in_Function(Lines):
+	Object,Attribute = Lines.split(".")
+	if Attribute.find(')') - Attribute.find('(') != 1:
+		Key = Attribute[Attribute.find('(')+1:Attribute.find(')')]
+		Key = int(Key) if Key.isdigit() else Key
+		getattr(Variables[Object],str(Attribute[:Attribute.find('(')]))(Key)
+		return 0
+	else:
+		return getattr(Variables[Object],str(Attribute[:Attribute.find('(')]))()
 
 def Run_Code(Lines):
 	if Lines == "exit()":
@@ -85,6 +94,10 @@ def Run_Code(Lines):
 	elif '[' in Lines:
 		Lines = ChangeVariables(Lines)
 		print(eval(Lines))
+	elif '.' in Lines:
+		Lines = Built_in_Function(Lines)
+		if str(Lines):
+			print(Lines)
 	else:
 		print("B",eval(Lines))
 	return 0
