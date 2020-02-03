@@ -1,13 +1,42 @@
 Variables = {} 
+
 def ChangeVariables(Expression):
+	print(Expression)
 	Variableslist =  sorted([key for key in Variables],key = lambda x:len(x),reverse = True)
 	for key in Variableslist:
 		if str(key) in Expression:
-			if type(Variables[key]) == str:
-				Expression =  Expression.replace(str(key),'\''+str(Variables[key]+'\''))
+			if not '\'' in Expression and not "\"" in Expression:
+				#print("jekfefhe\n")
+				if type(Variables[key]) == str:
+					Expression =  Expression.replace(str(key),'\''+str(Variables[key]+'\''))
+				else:
+					Expression =  Expression.replace(str(key),str(Variables[key]))
 			else:
-				Expression =  Expression.replace(str(key),str(Variables[key]))
+				NewExp = ''
+				while Expression:
+					Double = Expression.find('\"') if Expression.find('\"') != -1 else 10000
+					Single = Expression.find('\'') if Expression.find('\'') != -1 else 10000
+					#print(Double,Single)
+					Varposition = Expression.find((str(key))) if Expression.find(str(key)) != -1 else 10000
+					while Varposition < Double and Varposition < Single:
+						NewExp += Expression[:Expression.find(str(key))] + '\'' + str(Variables[key]) +'\''
+						Expression = Expression[Expression.find(str(key))+len(str(key)):]
+						Varposition = Expression.find((str(key))) if Expression.find(str(key)) != -1 else 10000
+					if Double < Single:
+						NewExp += Expression[:Double+1]
+						Expression = Expression[Double+1:]
+						NewExp += Expression[:Expression.find("\"")+1]
+						Expression = Expression[Expression.find("\"")+1:]
+					else:
+						NewExp += Expression[:Single+1]
+						Expression = Expression[Single+1:]
+						NewExp += Expression[:Expression.find('\'')+1]
+						Expression = Expression[Expression.find('\'')+1:]
+
+				Expression = NewExp
+		#print(Expression)
 	return Expression
+
 def Assign(Lines):
 	Operator = ['+', '-', '*', '/', '&', '|', '~', '>>', '<<', '//', '**']
 	LeftExp,RightExp = Lines.split("=")
@@ -46,6 +75,7 @@ def Assign(Lines):
 				Variables[LeftExp[i]] = RightExp
 			else:
 				Variables[LeftExp[i]] = RightExp[i]
+
 def Branch(Lines):
 	Stack = []
 	while True:
@@ -99,8 +129,10 @@ def Run_Code(Lines):
 		if str(Lines):
 			print(Lines)
 	else:
+		Lines = ChangeVariables(Lines)
 		print("B",eval(Lines))
 	return 0
+	
 #Lines = "a = [1,2,[3,4]]"
 #print(">>>",end='')
 IsEnd = 0
