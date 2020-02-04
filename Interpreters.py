@@ -1,7 +1,7 @@
 Variables = {} 
 
 def ChangeVariables(Expression):
-	print(Expression)
+	#print(Expression)
 	Variableslist =  sorted([key for key in Variables],key = lambda x:len(x),reverse = True)
 	for key in Variableslist:
 		if str(key) in Expression:
@@ -77,30 +77,53 @@ def Assign(Lines):
 				Variables[LeftExp[i]] = RightExp[i]
 
 def Branch(Lines):
+	#print("fueohif")
 	Stack = []
+	IsTrue = {}
+	
 	while True:
-		Stack.append(Lines)
-		Lines = input('...')
 		#print("-->",Lines)
 		try:
-			if Lines[:4] != 'elif' and Lines[:5] != 'else:' and Lines[0] !='\t':
+			if Lines[:4] != 'elif' and Lines[:5] != 'else:' and Lines[0] !='\t' and not 'if' in Lines:
 				break
 		except:
 			break
-	IsTrue = 0
+		#print(Nest_if)
+		IsTrue[Lines.count('\t')+1] = -1
+		Stack.append(Lines)
+		Lines = input('...')
+	
+	IsTrue[0] = IsTrue[1] = IsTrue[2] = -1
+	#Stack = ['if a == 6:','\tif b == 7:','\t\tc = 10','else:','\tif b == 8:','\t\tc = 10','\telse:','\t\tc = 12']
 	for Lines in Stack:
-		if ('elif' in Lines or 'else' in Lines) and IsTrue == 1:
-			break
-		elif 'if' in Lines or 'elif' in Lines:
-			Expression = Lines[2:Lines.find(":")] if 'if' in Lines else Lines[5:Lines.find(":")]
-			Expression = eval(ChangeVariables(Expression))
-			#print("exp =",Expression)
-			if Expression == True:
-				IsTrue = 1
-		elif 'else' in Lines:
-			IsTrue = 1
-		elif IsTrue == 1:
-			Run_Code(Lines)
+		flag = 0
+		nest = Lines.count("\t")
+		for i in range(nest+1):
+			if IsTrue[i] == 0:
+				flag = 1
+				break
+		if flag == 1:
+			continue
+		if ('else' in Lines or 'elif' in Lines) and IsTrue[nest+1] == 1:
+			IsTrue[nest+1] = 0
+			continue
+		else:
+			if 'if' in Lines or 'elif' in Lines:
+				Expression = Lines[Lines.find('if')+2:Lines.find(":")] if 'if' in Lines else Lines[Lines.find('elif')+4:Lines.find(":")]
+				Expression = eval(ChangeVariables(Expression))
+				print(Expression)
+				if Expression == True:
+					nest = Lines.count('\t')
+					IsTrue[nest+1] = 1
+				else:
+					IsTrue[nest+1] = 0
+			elif 'else' in Lines:
+				nest = Lines.count('\t')
+				IsTrue[nest+1] = 1
+			else:
+				print(Lines)
+				Run_Code(Lines)
+
 
 def Built_in_Function(Lines):
 	Object,Attribute = Lines.split(".")
@@ -120,7 +143,7 @@ def Run_Code(Lines):
 	elif "=" in Lines and not "==" in Lines:
 		Assign(Lines)
 	elif Lines in Variables:
-		print("A",Variables[Lines])
+		print(Variables[Lines])
 	elif '[' in Lines:
 		Lines = ChangeVariables(Lines)
 		print(eval(Lines))
@@ -130,11 +153,12 @@ def Run_Code(Lines):
 			print(Lines)
 	else:
 		Lines = ChangeVariables(Lines)
-		print("B",eval(Lines))
+		print(eval(Lines))
 	return 0
 	
 #Lines = "a = [1,2,[3,4]]"
 #print(">>>",end='')
+
 IsEnd = 0
 while not IsEnd:
 	Lines = input(">>>")
@@ -143,5 +167,6 @@ while not IsEnd:
 	print(Variables)
 	#Lines = input(">>>")
 
+#Branch(None)
 
 
