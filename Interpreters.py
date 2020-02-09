@@ -1,4 +1,4 @@
-Variables = {} 
+Variables = {'a' : 5,'b':7} 
 
 def ChangeVariables(Expression):
 	#print(Expression)
@@ -76,24 +76,10 @@ def Assign(Lines):
 			else:
 				Variables[LeftExp[i]] = RightExp[i]
 
-def Branch(Lines):
+def Branch(Stack):
 	#print("fueohif")
-	Stack = []
 	IsTrue = {}
-	
-	while True:
-		#print("-->",Lines)
-		try:
-			if Lines[:4] != 'elif' and Lines[:5] != 'else:' and Lines[0] !='\t' and not 'if' in Lines:
-				break
-		except:
-			break
-		#print(Nest_if)
-		IsTrue[Lines.count('\t')+1] = -1
-		Stack.append(Lines)
-		Lines = input('...')
-	
-	IsTrue[0] = IsTrue[1] = IsTrue[2] = -1
+	#IsTrue[0] = IsTrue[1] = IsTrue[2] = -1
 	#Stack = ['if a == 6:','\tif b == 7:','\t\tc = 10','else:','\tif b == 8:','\t\tc = 10','\telse:','\t\tc = 12']
 	for Lines in Stack:
 		flag = 0
@@ -124,6 +110,24 @@ def Branch(Lines):
 				print(Lines)
 				Run_Code(Lines)
 
+def Loop(case,Stack):
+	Test = Stack[0][Stack[0].find('while')+5:Stack[0].find(':')]
+	test = ChangeVariables(Test)
+	Stack.pop(0)
+	#print(Stack)
+	while eval(test) == True:
+		for i in range(len(Stack)):
+			if 'if' in Stack[i]:
+				stack = []
+				stack.append(Stack[i])
+				i += 1
+				while Stack[i].count('\t') > 1:
+					stack.append(Stack[i])
+					i += 1
+				Branch(stack)
+			else:
+				Run_Code(Stack[i])
+		test = ChangeVariables(Test)
 
 def Built_in_Function(Lines):
 	Object,Attribute = Lines.split(".")
@@ -139,11 +143,21 @@ def Run_Code(Lines):
 	if Lines == "exit()":
 		return 1
 	if Lines[:2] == 'if':
-		Branch(Lines)
+		Stack = []
+		while True:
+			try:
+				if Lines[:4] != 'elif' and Lines[:5] != 'else:' and Lines[0] !='\t' and not 'if' in Lines:
+					break
+			except:
+				break
+			IsTrue[Lines.count('\t')+1] = -1
+			Stack.append(Lines)
+			Lines = input('...')
+		Branch(Stack)
 	elif "=" in Lines and not "==" in Lines:
 		Assign(Lines)
 	elif Lines in Variables:
-		print(Variables[Lines])
+		print("A",Variables[Lines])
 	elif '[' in Lines:
 		Lines = ChangeVariables(Lines)
 		print(eval(Lines))
@@ -151,9 +165,20 @@ def Run_Code(Lines):
 		Lines = Built_in_Function(Lines)
 		if str(Lines):
 			print(Lines)
+	elif 'while' in Lines:
+		Stack = []
+		while True:
+			try:
+				if Lines[:4] != 'while' and Lines[0] !='\t' in Lines:
+					break
+			except:
+				break
+			Stack.append(Lines)
+			Lines = input('...')
+		Loop(0,Stack)
 	else:
 		Lines = ChangeVariables(Lines)
-		print(eval(Lines))
+		print("B",eval(Lines))
 	return 0
 	
 #Lines = "a = [1,2,[3,4]]"
