@@ -1,4 +1,4 @@
-Variables = {'a' : [1,2,3,4,5],'b':7} 
+Variables = {'a' : [1,2,3],'b':7,'c':[1,2]} 
 
 def ChangeVariables(Expression):
 	#print(Expression)
@@ -111,44 +111,91 @@ def Branch(Stack):
 				Run_Code(Lines)
 
 def Loop(case,Stack):
+	print(Stack)
+	Stack.append('')
 	if case == 0:
 		Test = Stack[0][Stack[0].find('while')+5:Stack[0].find(':')]
 		test = ChangeVariables(Test)
 		Stack.pop(0)
 		#print(Stack)
 		while eval(test) == True:
-			for i in range(len(Stack)):
+			i = 0
+			while i <  len(Stack):
 				if 'if' in Stack[i]:
 					stack = []
 					stack.append(Stack[i])
+					nest = Stack[i].count('\t')
 					i += 1
-					while Stack[i].count('\t') > 1:
+					while Stack[i] and Stack[i].count('\t') > nest:
 						stack.append(Stack[i])
 						i += 1
 					Branch(stack)
+				elif 'while' in Stack[i]:
+					stack = []
+					stack.append(Stack[i])
+					nest = Stack[i].count('\t')
+					i += 1
+					while Stack[i] and Stack[i].count('\t') > nest:
+						stack.append(Stack[i])
+						i += 1
+					Loop(0,stack)
+				elif 'for' in Stack[i]:
+					stack = []
+					stack.append(Stack[i])
+					nest = Stack[i].count('\t')
+					i += 1
+					while Stack[i] and Stack[i].count('\t') > nest:
+						stack.append(Stack[i])
+						i += 1
+					Loop(1,stack)						
 				else:
-					Run_Code(Stack[i])
+					if Stack[i]:
+						Run_Code(Stack[i])
+					i += 1
 			test = ChangeVariables(Test)
 	else:
 		LeftExp = Stack[0][Stack[0].find('for')+3:Stack[0].find('in')]
 		RightExp = Stack[0][Stack[0].find('in')+2:Stack[0].find(':')]
 		Stack.pop(0)
 		#print(len(ChangeVariables(RightExp)))
-		for j in range(len(eval(ChangeVariables(RightExp)))):
-			Lines = LeftExp + '=' + RightExp + '[' + str(j) + ']'
+		for x in range(len(eval(ChangeVariables(RightExp)))):
+			Lines = LeftExp + '=' + RightExp + '[' + str(x) + ']'
 			#print(Lines)
 			Assign(Lines)
-			for i in range(len(Stack)):	
+			i = 0
+			while i < len(Stack):	
+				#print(i)
 				if 'if' in Stack[i]:
-						stack = []
+					stack = []
+					stack.append(Stack[i])
+					nest = Stack[i].count('\t')
+					i += 1
+					while Stack[i] and Stack[i].count('\t') > nest:
 						stack.append(Stack[i])
 						i += 1
-						while Stack[i].count('\t') > 1:
-							stack.append(Stack[i])
-							i += 1
-						Branch(stack)
-				else:	
-					Run_Code(Stack[i])
+					Branch(stack)
+				elif 'while' in Stack[i]:
+					stack = []
+					stack.append(Stack[i])
+					nest = Stack[i].count('\t')
+					i += 1
+					while Stack[i] and Stack[i].count('\t') > nest:
+						stack.append(Stack[i])
+						i += 1
+					Loop(0,stack)
+				elif 'for' in Stack[i]:
+					stack = []
+					stack.append(Stack[i])
+					nest = Stack[i].count('\t')
+					i += 1
+					while Stack[i] and Stack[i].count('\t') > nest:
+						stack.append(Stack[i])
+						i += 1
+					Loop(1,stack)						
+				else:
+					if Stack[i]:
+						Run_Code(Stack[i])
+					i += 1
 			#print(Variables['b'])
 
 
@@ -199,7 +246,7 @@ def Run_Code(Lines):
 				break
 			Stack.append(Lines)
 			Lines = input('...')
-		if 'while' in Lines:
+		if 'while' in Stack[0]:
 			Loop(0,Stack)
 		else:
 			Loop(1,Stack)
