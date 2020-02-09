@@ -1,4 +1,4 @@
-Variables = {'a' : 5,'b':7} 
+Variables = {'a' : [1,2,3,4,5],'b':7} 
 
 def ChangeVariables(Expression):
 	#print(Expression)
@@ -111,23 +111,47 @@ def Branch(Stack):
 				Run_Code(Lines)
 
 def Loop(case,Stack):
-	Test = Stack[0][Stack[0].find('while')+5:Stack[0].find(':')]
-	test = ChangeVariables(Test)
-	Stack.pop(0)
-	#print(Stack)
-	while eval(test) == True:
-		for i in range(len(Stack)):
-			if 'if' in Stack[i]:
-				stack = []
-				stack.append(Stack[i])
-				i += 1
-				while Stack[i].count('\t') > 1:
+	if case == 0:
+		Test = Stack[0][Stack[0].find('while')+5:Stack[0].find(':')]
+		test = ChangeVariables(Test)
+		Stack.pop(0)
+		#print(Stack)
+		while eval(test) == True:
+			for i in range(len(Stack)):
+				if 'if' in Stack[i]:
+					stack = []
 					stack.append(Stack[i])
 					i += 1
-				Branch(stack)
-			else:
-				Run_Code(Stack[i])
-		test = ChangeVariables(Test)
+					while Stack[i].count('\t') > 1:
+						stack.append(Stack[i])
+						i += 1
+					Branch(stack)
+				else:
+					Run_Code(Stack[i])
+			test = ChangeVariables(Test)
+	else:
+		LeftExp = Stack[0][Stack[0].find('for')+3:Stack[0].find('in')]
+		RightExp = Stack[0][Stack[0].find('in')+2:Stack[0].find(':')]
+		Stack.pop(0)
+		#print(len(ChangeVariables(RightExp)))
+		for j in range(len(eval(ChangeVariables(RightExp)))):
+			Lines = LeftExp + '=' + RightExp + '[' + str(j) + ']'
+			#print(Lines)
+			Assign(Lines)
+			for i in range(len(Stack)):	
+				if 'if' in Stack[i]:
+						stack = []
+						stack.append(Stack[i])
+						i += 1
+						while Stack[i].count('\t') > 1:
+							stack.append(Stack[i])
+							i += 1
+						Branch(stack)
+				else:	
+					Run_Code(Stack[i])
+			#print(Variables['b'])
+
+
 
 def Built_in_Function(Lines):
 	Object,Attribute = Lines.split(".")
@@ -165,17 +189,20 @@ def Run_Code(Lines):
 		Lines = Built_in_Function(Lines)
 		if str(Lines):
 			print(Lines)
-	elif 'while' in Lines:
+	elif 'while' in Lines or 'for' in Lines:
 		Stack = []
 		while True:
 			try:
-				if Lines[:4] != 'while' and Lines[0] !='\t' in Lines:
+				if Lines[:4] != 'while' and Lines[0] !='\t' in Lines and not 'for' in Lines:
 					break
 			except:
 				break
 			Stack.append(Lines)
 			Lines = input('...')
-		Loop(0,Stack)
+		if 'while' in Lines:
+			Loop(0,Stack)
+		else:
+			Loop(1,Stack)
 	else:
 		Lines = ChangeVariables(Lines)
 		print("B",eval(Lines))
